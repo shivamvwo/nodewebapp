@@ -1,4 +1,3 @@
-const http = require('http');
 const { init } = require('vwo-fme-node-sdk');
 
 const accountId = '881134';
@@ -7,7 +6,7 @@ const featureKey = 'boolean';
 
 let vwoClient;
 
-async function startServer() {
+async function start() {
   try {
     vwoClient = await init({
       accountId,
@@ -19,36 +18,31 @@ async function startServer() {
           if (error) {
             console.log('Error flushing events:', error);
           } else {
-            console.log('Events flushed successfully:', events);
+            console.log('Events flushed successfully:', events ? events.ev.length : 0);
           }
         }
       }
     });
     console.log('VWO SDK initialized');
 
-    const server = http.createServer(async (req, res) => {
-      console.log('Request received');
-      for (let i = 0; i < 500; i++) {
-        const context = {
-          id: 'user_' + Math.random(), // Random ID to simulate different users
-        };
-        const flag = await vwoClient.getFlag(featureKey, context);
-        console.log("loop index: ", i, "flag isEnabled: ", flag.isEnabled());
-        vwoClient.trackEvent('checkout', context);
-      }
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      console.log('Events processed successfully');
-      res.end("true");
-    });
+    console.log('Starting load test loop...');
+    for (let i = 0; i < 500; i++) {
+      const context = {
+        id: 'user_' + Math.random(), // Random ID to simulate different users
+      };
+      const flag = await vwoClient.getFlag(featureKey, context);
+      console.log("loop index: ", i, "flag isEnabled: ", flag.isEnabled());
+      vwoClient.trackEvent('checkout', context);
+    }
+    console.log('Events processed successfully');
+    await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
+    console.log('Exiting...');
+    process.exit(0);
 
-    const port = process.env.PORT || 3000;
-    server.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
   } catch (err) {
     console.error('Failed to initialize VWO SDK:', err);
     process.exit(1);
   }
 }
 
-startServer();
+start();
