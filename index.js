@@ -27,6 +27,7 @@ async function startServer() {
     console.log('VWO SDK initialized');
 
     const server = http.createServer(async (req, res) => {
+      console.log('Request received');
       for (let i = 0; i < 500; i++) {
         const context = {
           id: 'user_' + Math.random(), // Random ID to simulate different users
