@@ -14,7 +14,7 @@ async function startServer() {
       sdkKey,
       batchEventData: {
         eventsPerRequest: 500,
-        requestTimeInterval: 5 * 60 * 1000,
+        requestTimeInterval: 3,
         flushCallback: (error, events) => {
           if (error) {
             console.log('Error flushing events:', error);
@@ -27,14 +27,17 @@ async function startServer() {
     console.log('VWO SDK initialized');
 
     const server = http.createServer(async (req, res) => {
-      const context = {
-        id: 'user_' + Math.random(), // Random ID to simulate different users
-      };
-      const flag = await vwoClient.getFlag(featureKey, context);
-      const isFlagEnabled = flag.isEnabled();
-      vwoClient.trackEvent('checkout', context);
+      for (let i = 0; i < 500; i++) {
+        const context = {
+          id: 'user_' + Math.random(), // Random ID to simulate different users
+        };
+        await vwoClient.getFlag(featureKey, context);
+        //const isFlagEnabled = flag.isEnabled();
+        vwoClient.trackEvent('checkout', context);
+      }
       res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end(String(isFlagEnabled));
+      console.log('Events processed successfully');
+      // res.end(String(isFlagEnabled));
     });
 
     server.listen(3000, () => {
