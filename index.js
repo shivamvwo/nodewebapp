@@ -32,8 +32,8 @@ async function startServer() {
         const context = {
           id: 'user_' + Math.random(), // Random ID to simulate different users
         };
-        await vwoClient.getFlag(featureKey, context);
-        //const isFlagEnabled = flag.isEnabled();
+        const flag = await vwoClient.getFlag(featureKey, context);
+        console.log("loop index: ", i, "flag isEnabled: ", flag.isEnabled());
         vwoClient.trackEvent('checkout', context);
       }
       res.writeHead(200, { 'Content-Type': 'text/plain' });
